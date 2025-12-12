@@ -6,7 +6,7 @@ on:
     paths:
       - 'infra/**'
       - 'services/**'
-      - 'ci/pipeline.yaml'
+      - '.github/workflows/ci-cd.yaml'
 
 jobs:
   build:
@@ -34,7 +34,7 @@ jobs:
           context: ./services/api
           file: ./services/api/Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository }}/cuegrowth-api:${{ github.sha }}
+          tags: ghcr.io/${{ github.repository_owner }}/cuegrowth-api:${{ github.sha }}
 
       - name: Build and push Worker
         uses: docker/build-push-action@v6
@@ -42,20 +42,20 @@ jobs:
           context: ./services/worker
           file: ./services/worker/Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository }}/cuegrowth-worker:${{ github.sha }}
+          tags: ghcr.io/${{ github.repository_owner }}/cuegrowth-worker:${{ github.sha }}
 
-      - name: Scan API image
+      - name: Scan API image with Trivy
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ghcr.io/${{ github.repository }}/cuegrowth-api:${{ github.sha }}
+          image-ref: ghcr.io/${{ github.repository_owner }}/cuegrowth-api:${{ github.sha }}
           format: table
           exit-code: '1'
           ignore-unfixed: false
 
-      - name: Scan Worker image
+      - name: Scan Worker image with Trivy
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ghcr.io/${{ github.repository }}/cuegrowth-worker:${{ github.sha }}
+          image-ref: ghcr.io/${{ github.repository_owner }}/cuegrowth-worker:${{ github.sha }}
           format: table
           exit-code: '1'
           ignore-unfixed: false
@@ -65,21 +65,38 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
 
-      steps:
+    steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Update image tags in Helm values
-        run: |
-          sed -i "s|repository:.*|repository: ghcr.io/${{ github.repository }}/cuegrowth-api|g" infra/helm/api/values.yaml
-          sed -i "s|tag:.*|tag: ${{ github.sha }}|g" infra/helm/api/values.yaml
-          sed -i "s|repository:.*|repository: ghcr.io/${{ github.repository }}/cuegrowth-worker|g" infra/helm/worker/values.yaml
-          sed -i "s|tag:.*|tag: ${{ github.sha }}|g" infra/helm/worker/values.yaml
-
-      - name: Commit and push manifest update
+      - name: Configure Git user
         run: |
           git config --global user.name "CI Bot"
           git config --global user.email "ci@noreply.github.com"
+
+      - name: Update image tags in Helm values
+        run: |
+          sed -i "s|repository:.*|repository: ghcr.io/${{ github.repository_owner }}/cuegrowth-api|g" infra/helm/api/values.yaml
+          sed -i "s|tag:.*|tag: ${{ github.sha }}|g" infra/helm/api/values.yaml
+
+          sed -i "s|repository:.*|repository: ghcr.io/${{ github.repository_owner }}/cuegrowth-worker|g" infra/helm/worker/values.yaml
+          sed -i "s|tag:.*|tag: ${{ github.sha }}|g" infra/helm/worker/values.yaml
+
+      - name: Check if files changed
+        id: git_diff
+        run: |
+          if ! git diff --quiet infra/helm/api/values.yaml infra/helm/worker/values.yaml; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and push manifest updates
+        if: steps.git_diff.outputs.changed == 'true'
+        run: |
           git add infra/helm/api/values.yaml infra/helm/worker/values.yaml
-          git commit -m "Update image tags to ${{ github.sha }}" || echo "No changes"
+          git commit -m "chore: update image tags to ${{ github.sha }}"
           git push
