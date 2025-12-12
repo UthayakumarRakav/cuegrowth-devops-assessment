@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+helmGlobals:
+  chartHome: ../helm
+helmCharts:
+  - name: valkey
+    version: v0.3.0
+    releaseName: valkey
+    namespace: cuegrowth
+    valuesFile: ../helm/valkey/valkey-values.yaml
+  - name: nats
+    version: 0.14.0
+    releaseName: nats
+    namespace: cuegrowth
+    valuesFile: ../helm/nats/nats-values.yaml
+  - name: api
+    releaseName: api
+    namespace: cuegrowth
+    valuesFile: ../helm/api/values.yaml
+  - name: worker
+    releaseName: worker
+    namespace: cuegrowth
+    valuesFile: ../helm/worker/values.yaml

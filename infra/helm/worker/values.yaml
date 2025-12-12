@@ -1,0 +1,17 @@
+replicaCount: 2
+
+image:
+  repository: localhost:32000/cuegrowth-worker
+  tag: final
+  pullPolicy: IfNotPresent
+
+service:
+  port: 8001
+
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "100m"
+  limits:
+    memory: "256Mi"
+    cpu: "200m"

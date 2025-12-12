@@ -1,0 +1,43 @@
+# infra/helm/valkey/valkey-values.yaml
+replica:
+  replicaCount: 2
+  persistence:
+    enabled: true
+    size: 1Gi
+    storageClass: "microk8s-hostpath"  # WSL-compatible
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop: ["ALL"]
+
+auth:
+  enabled: true
+  password: "secure_valkey_password_123!"  # In real: use secretRef
+
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    namespace: cuegrowth
+
+serviceAccount:
+  create: true
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+networkPolicy:
+  enabled: false  # We'll define our own later

@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-config
+  namespace: cuegrowth
+data:
+  VALKEY_HOST: "valkey-primary"
+  VALKEY_PORT: "6379"
+  NATS_URL: "nats://nats.cuegrowth.svc.cluster.local:4222"
+  JWT_AUDIENCE: "cuegrowth-api"
+  JWT_ISSUER: "cuegrowth"

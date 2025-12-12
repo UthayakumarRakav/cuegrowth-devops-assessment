@@ -1,0 +1,66 @@
+nats:
+  image: nats:2.12.2-alpine
+   #Enable client listening on all interfaces
+  clientAdvertise: true
+
+  #Explicitly configure cluster (required for JetStream + external access)
+  cluster:
+    enabled: true
+    replicas: 1
+    noAdvertise: false
+
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+  pod:
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 1000
+      fsGroup: 1000
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop: ["ALL"]
+
+store:
+  enabled: true
+  jetStream:
+    enabled: true
+    fileStore:
+      storageDirectory: /data
+      pod:
+        persistentVolume:
+          enabled: true
+          size: 1Gi
+          storageClass: "microk8s-hostpath"
+
+auth:
+  enabled: false
+  accounts:
+    cuegrowth:
+      users:
+        - user: worker
+          password: "nats_worker_pass_456!"
+        - user: api
+          password: "nats_api_pass_789!"
+  #systemAccount: cuegrowth
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+serviceAccount:
+  create: true
+
+natsBox:
+  enabled: false
+
+# Disable everything metrics-related
+metrics: false
+serviceMonitor:
+  enabled: false

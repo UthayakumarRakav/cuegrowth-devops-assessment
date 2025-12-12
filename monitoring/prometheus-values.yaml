@@ -1,0 +1,20 @@
+namespace: monitoring
+
+prometheus:
+  prometheusSpec:
+    serviceMonitorSelector:
+      matchLabels:
+        team: cuegrowth
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: microk8s-hostpath
+          resources:
+            requests:
+              storage: 2Gi
+
+nodeExporter:
+  enabled: false
+
+kubeStateMetrics:
+  enabled: true

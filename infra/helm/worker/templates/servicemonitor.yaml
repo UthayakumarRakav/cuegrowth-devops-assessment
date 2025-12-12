@@ -1,0 +1,15 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "worker.fullname" . }}
+  namespace: cuegrowth
+spec:
+  selector:
+    matchLabels:
+      app: worker
+  endpoints:
+    - port: metrics
+      interval: 30s
+  namespaceSelector:
+    matchNames:
+      - cuegrowth

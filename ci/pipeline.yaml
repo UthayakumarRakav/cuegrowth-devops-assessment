@@ -1,0 +1,78 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'infra/**'
+      - 'services/**'
+      - 'ci/pipeline.yaml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push API
+        uses: docker/build-push-action@v6
+        with:
+          context: ./services/api
+          file: ./services/api/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository }}/cuegrowth-api:${{ github.sha }}
+
+      - name: Build and push Worker
+        uses: docker/build-push-action@v6
+        with:
+          context: ./services/worker
+          file: ./services/worker/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository }}/cuegrowth-worker:${{ github.sha }}
+
+      - name: Scan API image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ghcr.io/${{ github.repository }}/cuegrowth-api:${{ github.sha }}
+          format: table
+          exit-code: '1'
+          ignore-unfixed: false
+
+      - name: Scan Worker image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ghcr.io/${{ github.repository }}/cuegrowth-worker:${{ github.sha }}
+          format: table
+          exit-code: '1'
+          ignore-unfixed: false
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update image tags in Helm values
+        run: |
+          sed -i "s|repository:.*|repository: ghcr.io/${{ github.repository }}/cuegrowth-api|g" infra/helm/api/values.yaml
+          sed -i "s|tag:.*|tag: ${{ github.sha }}|g" infra/helm/api/values.yaml
+          sed -i "s|repository:.*|repository: ghcr.io/${{ github.repository }}/cuegrowth-worker|g" infra/helm/worker/values.yaml
+          sed -i "s|tag:.*|tag: ${{ github.sha }}|g" infra/helm/worker/values.yaml
+
+      - name: Commit and push manifest update
+        run: |
+          git config --global user.name "CI Bot"
+          git config --global user.email "ci@noreply.github.com"
+          git add infra/helm/api/values.yaml infra/helm/worker/values.yaml
+          git commit -m "Update image tags to ${{ github.sha }}" || echo "No changes"
+          git push
