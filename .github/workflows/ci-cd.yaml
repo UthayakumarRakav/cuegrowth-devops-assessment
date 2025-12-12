@@ -38,7 +38,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ./services/api
-          file: ./services/Dockerfile
+          #file: ./services/Dockerfile
           push: true
           tags: ghcr.io/${{ steps.owner.outputs.owner }}/cuegrowth-api:${{ github.sha }}
 
@@ -46,7 +46,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ./services/worker
-          file: ./services/worker/Dockerfile
+          #file: ./services/worker/Dockerfile
           push: true
           tags: ghcr.io/${{ steps.owner.outputs.owner }}/cuegrowth-worker:${{ github.sha }}
 
