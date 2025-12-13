@@ -1,17 +1,17 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: cuegrowth-apps
+  name: api
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: https://github.com/UthayakumarRakav/cuegrowth-devops-assessment.git
-    path: infra
+    path: infra/helm/api
     targetRevision: main
   destination:
     server: https://kubernetes.default.svc
-    namespace: argocd
+    namespace: cuegrowth
   syncPolicy:
     automated:
       prune: true
