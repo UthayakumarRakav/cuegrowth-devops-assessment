@@ -9,6 +9,9 @@ spec:
     repoURL: 'https://github.com/UthayakumarRakav/cuegrowth-devops-assessment.git'
     targetRevision: HEAD
     path: infra
+    directory:
+      recurse: true
+      jsonnet: {}
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: cuegrowth
@@ -16,5 +19,3 @@ spec:
     automated:
       prune: true
       selfHeal: true
-    syncOptions:
-      - CreateNamespace=true

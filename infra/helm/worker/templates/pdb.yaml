@@ -1,10 +1,10 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: {{ include "worker.fullname" . }}
+  name: {{ include "worker.fullname" .}}
   namespace: cuegrowth
 spec:
   minAvailable: 1
   selector:
     matchLabels:
-      {{- include "worker.selectorLabels" . | nindent 6 }}
+      {{- include "worker.selectorLabels" . | nindent 6}}
