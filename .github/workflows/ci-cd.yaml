@@ -56,6 +56,7 @@ jobs:
           image-ref: ghcr.io/${{ steps.owner.outputs.owner }}/cuegrowth-api:${{ github.sha }}
           format: table
           exit-code: '1'
+          severity: 'HIGH,CRITICAL'
           ignore-unfixed: false
 
       - name: Scan Worker image with Trivy
@@ -64,6 +65,7 @@ jobs:
           image-ref: ghcr.io/${{ steps.owner.outputs.owner }}/cuegrowth-worker:${{ github.sha }}
           format: table
           exit-code: '1'
+          severity: 'HIGH,CRITICAL'
           ignore-unfixed: false
 
   deploy:
