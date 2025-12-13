@@ -1,8 +1,8 @@
 replicaCount: 2
 
 image:
-  repository: localhost:32000/cuegrowth-worker
-  tag: final
+  repository: ghcr.io/uthayakumarrakav/cuegrowth-worker
+  tag: db766659fbea025d619d751fe758df255891818e
   pullPolicy: IfNotPresent
 
 service:
