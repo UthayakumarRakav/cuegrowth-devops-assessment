@@ -1,0 +1,55 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: valkey
+  namespace: monitoring
+  labels:
+    team: cuegrowth
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: valkey
+  endpoints:
+    - port: metrics
+      interval: 30s
+  namespaceSelector:
+    matchNames:
+      - cuegrowth
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: nats
+  namespace: monitoring
+  labels:
+    team: cuegrowth
+spec:
+  selector:
+    matchLabels:
+      app: nats
+  endpoints:
+    - port: metrics
+      interval: 30s
+  namespaceSelector:
+    matchNames:
+      - cuegrowth
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: worker
+  namespace: monitoring
+  labels:
+    team: cuegrowth
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: worker
+  endpoints:
+    - port: metrics
+      interval: 30s
+  namespaceSelector:
+    matchNames:
+      - cuegrowth

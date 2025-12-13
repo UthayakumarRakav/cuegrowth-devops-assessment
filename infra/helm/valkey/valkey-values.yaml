@@ -41,3 +41,8 @@ podDisruptionBudget:
 
 networkPolicy:
   enabled: false  # We'll define our own later
+service:
+  metrics:
+    enabled: true
+    type: ClusterIP
+    port: 9121
