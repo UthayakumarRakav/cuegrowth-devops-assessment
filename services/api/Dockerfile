@@ -1,4 +1,3 @@
-# services/api/Dockerfile
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -6,6 +5,8 @@ WORKDIR /app
 RUN addgroup --system --gid 1001 app && adduser --system --uid 1001 --ingroup app app
 
 COPY requirements.txt .
+# Upgrade pip first
+RUN pip install --no-cache-dir --upgrade pip==25.3
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
